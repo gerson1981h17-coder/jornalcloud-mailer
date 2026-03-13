@@ -19,7 +19,7 @@ app.get('/', (req, res) => {
 });
 
 app.post('/send', async (req, res) => {
-  const { to, subject, html, text, from_name } = req.body;
+  const { to, subject, html, text, from_name, attachment } = req.body;
 
   if (!to)            return res.status(400).json({ ok: false, error: 'Falta el destinatario (to)' });
   if (!subject)       return res.status(400).json({ ok: false, error: 'Falta el asunto (subject)' });
@@ -29,19 +29,21 @@ app.post('/send', async (req, res) => {
   const senderName = from_name || 'JornalCloud';
 
   try {
+    const payload = {
+      from:    `${senderName} <onboarding@resend.dev>`,
+      to:      destinatarios,
+      subject: subject,
+      html:    html || `<pre style="font-family:sans-serif;white-space:pre-wrap">${text}</pre>`,
+      text:    text || '',
+    };
+
     const response = await fetch('https://api.resend.com/emails', {
       method: 'POST',
       headers: {
         'Authorization': `Bearer ${process.env.RESEND_API_KEY}`,
         'Content-Type': 'application/json',
       },
-      body: JSON.stringify({
-        from:    `${senderName} <onboarding@resend.dev>`,
-        to:      destinatarios,
-        subject: subject,
-        html:    html || `<pre style="font-family:sans-serif;white-space:pre-wrap">${text}</pre>`,
-        text:    text || '',
-      }),
+      body: JSON.stringify(payload),
     });
 
     const data = await response.json();
