@@ -37,6 +37,15 @@ app.post('/send', async (req, res) => {
       text:    text || '',
     };
 
+    // Adjuntar PDF si viene en la petición
+    if (attachment && attachment.data && attachment.filename) {
+      payload.attachments = [{
+        filename: attachment.filename,
+        content:  attachment.data,
+      }];
+      console.log(`📎 Adjunto: ${attachment.filename} (${Math.round(attachment.data.length/1024)}KB)`);
+    }
+
     const response = await fetch('https://api.resend.com/emails', {
       method: 'POST',
       headers: {
