@@ -1,0 +1,14 @@
+services:
+  - type: web
+    name: jornalcloud-mailer
+    runtime: node
+    plan: free
+    buildCommand: npm install
+    startCommand: npm start
+    envVars:
+      - key: GMAIL_USER
+        sync: false        # lo pones tú en el dashboard de Render
+      - key: GMAIL_PASS
+        sync: false        # App Password de Google (16 caracteres)
+      - key: PORT
+        value: 3000
