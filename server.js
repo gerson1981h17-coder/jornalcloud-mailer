@@ -7,12 +7,12 @@ const PORT = process.env.PORT || 3000;
 app.use(cors());
 app.use(express.json({ limit: '5mb' }));
 
-if (!process.env.RESEND_API_KEY) {
-  console.error('❌ FALTA VARIABLE DE ENTORNO: RESEND_API_KEY');
+if (!process.env.BREVO_API_KEY) {
+  console.error('❌ FALTA VARIABLE DE ENTORNO: BREVO_API_KEY');
   process.exit(1);
 }
 
-console.log('✅ JornalCloud Mailer listo con Resend');
+console.log('✅ JornalCloud Mailer listo con Brevo');
 
 app.get('/', (req, res) => {
   res.json({ status: 'ok', service: 'JornalCloud Mailer', time: new Date().toISOString() });
@@ -46,13 +46,25 @@ app.post('/send', async (req, res) => {
       console.log(`📎 Adjunto: ${attachment.filename} (${Math.round(attachment.data.length/1024)}KB)`);
     }
 
-    const response = await fetch('https://api.resend.com/emails', {
+    const response = await fetch('https://api.brevo.com/v3/smtp/email', {
       method: 'POST',
       headers: {
-        'Authorization': `Bearer ${process.env.RESEND_API_KEY}`,
+        'api-key': process.env.BREVO_API_KEY,
         'Content-Type': 'application/json',
       },
-      body: JSON.stringify(payload),
+      body: JSON.stringify({
+        sender:   { name: senderName, email: 'gerson1981h17@gmail.com' },
+        to:       destinatarios.map(e => ({ email: e })),
+        subject:  subject,
+        htmlContent: html || `<pre style="font-family:sans-serif;white-space:pre-wrap">${text}</pre>`,
+        textContent: text || '',
+        ...(payload.attachments ? {
+          attachment: payload.attachments.map(a => ({
+            name:    a.filename,
+            content: a.content,
+          }))
+        } : {})
+      }),
     });
 
     const data = await response.json();
