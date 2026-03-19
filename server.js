@@ -57,7 +57,7 @@ app.post('/send', async (req, res) => {
         to:       destinatarios.map(e => ({ email: e })),
         subject:  subject,
         htmlContent: html || `<pre style="font-family:sans-serif;white-space:pre-wrap">${text}</pre>`,
-        textContent: text || '',
+        textContent: text || subject || 'Parte de jornales adjunto.',
         ...(payload.attachments ? {
           attachment: payload.attachments.map(a => ({
             name:    a.filename,
